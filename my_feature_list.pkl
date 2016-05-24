@@ -1,0 +1,14 @@
+(lp0
+S'poi'
+p1
+aS'total_payments'
+p2
+aS'from_this_person_to_poi'
+p3
+aS'total_stock_value'
+p4
+aS'expenses'
+p5
+aS'long_term_incentive'
+p6
+a.
