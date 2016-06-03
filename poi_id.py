@@ -10,6 +10,8 @@ from tester import dump_classifier_and_data
 ### features_list is a list of strings, each of which is a feature name.
 ### The first feature must be "poi".
 features_list = ['poi','total_payments', 'from_this_person_to_poi', 'total_stock_value', 'expenses', 'long_term_incentive', 'total_cash']
+#features_list = ['poi', 'salary', 'to_messages', 'deferral_payments', 'total_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred', 'total_stock_value', 'total_stock_value', 'shared_receipt_sith_poi', 'long_term_incentive', 'exercised_stock_options', 'from_messages', 'other', 'from_poi_to_this_person', 'from_this_person_to_poi', 'deferred_income', 'expenses', 'total_cash']
+
 
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
@@ -18,8 +20,6 @@ with open("final_project_dataset.pkl", "r") as data_file:
 #I'm going to investigate the data to view how it looks in order:
 # for name in data_dict:
 # 	print name , "	" ,  data_dict[name]['poi'] , "	" , data_dict[name]['total_payments'] , "	" , data_dict[name]['from_this_person_to_poi'] , "	" , data_dict[name]['total_stock_value'] , "	" , data_dict[name]['long_term_incentive']
-
-
 # print len(data_dict)
 
 
@@ -38,9 +38,24 @@ for key in data_dict:
 for name in to_remove:
 	del data_dict[name]
 
+#Person of interest counters
+poi_count = 0
+non_poi_count = 0
+
+nan_counter = {'salary': 0, 'to_messages': 0, 'deferral_payments': 0, 'total_payments': 0, 'exercised_stock_options': 0, 'bonus': 0, 'restricted_stock': 0, 'shared_receipt_with_poi': 0, 'restricted_stock_deferred': 0, 'total_stock_value': 0, 'expenses': 0, 'loan_advances': 0, 'from_messages': 0, 'other': 0, 'from_this_person_to_poi': 0, 'poi': 0, 'director_fees': 0, 'deferred_income': 0, 'long_term_incentive': 0, 'email_address': 0, 'from_poi_to_this_person': 0}
+
 ### Task 3: Custom Feature
 #This feature slightly boosts the f1 and f2 results of the test
 for key in data_dict:
+	if data_dict[key]['poi'] == True:
+		poi_count = poi_count + 1
+	else:
+		non_poi_count = non_poi_count + 1
+
+	for sub_key in data_dict[key]:
+		if data_dict[key][sub_key] == 'NaN':
+			nan_counter[sub_key] = nan_counter[sub_key] + 1
+
 	total_cash = 0
 	if data_dict[key]['salary'] != 'NaN':
 		total_cash = total_cash + data_dict[key]['salary']
@@ -55,6 +70,13 @@ for key in data_dict:
 	if data_dict[key]['long_term_incentive'] != 'NaN':
 		total_cash = total_cash + data_dict[key]['long_term_incentive']
 	data_dict[key]['total_cash'] = total_cash
+
+print "Number of POIs: ", poi_count
+print "Number of non POIs", non_poi_count
+
+print "NUMBER OF NANs BY FEATURE."
+for key in nan_counter:
+	print "Feature: ", key, " ||| NaNs: ", nan_counter[key]
 
 ### Store to my_dataset for easy export below.
 my_dataset = data_dict
@@ -77,6 +99,7 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn import tree
 from sklearn.naive_bayes import GaussianNB
+from sklearn.feature_selection import SelectKBest
 
 #I've tried manipulating max_features, max_depth, and splitter among others but have not coerced better results than the defaults
 clf_tree = tree.DecisionTreeClassifier(max_features=None, max_depth=None, splitter="best")
@@ -96,7 +119,7 @@ from sklearn.cross_validation import train_test_split
 features_train, features_test, labels_train, labels_test = \
     train_test_split(features, labels)
 
-#as mentioned above on line 25, IF Kenneth Lay is in the test set I'm going to delete him.
+#as mentioned above on line 25, IF Kenneth Lay is in the training set I'm going to delete him.
 tracker = 1
 for key in features_train:
 	if key == "LAY KENNETH L":
